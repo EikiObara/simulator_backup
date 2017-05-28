@@ -1,0 +1,35 @@
+﻿  arm_simulator.cpp
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(514): warning C4800: 'int': ブール値を 'true' または 'false' に強制的に設定します (警告の処理)
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(560): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(565): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(570): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(575): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(580): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(585): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(590): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(605): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(610): warning C4244: '引数': 'double' から 'const float' への変換です。データが失われる可能性があります。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(714): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(715): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(716): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(718): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(719): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(720): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(721): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(733): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(734): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(735): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(736): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(737): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(738): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(739): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(740): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(785): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(786): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(787): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(788): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(789): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(790): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+c:\users\obara\documents\visual studio 2015\projects\3darmsimulator_develop\arm_simulator\src\arm_simulator.cpp(844): warning C4305: '引数': 'double' から 'const float' へ切り詰めます。
+  arm_simulator.vcxproj -> C:\Users\obara\Documents\Visual Studio 2015\Projects\3DArmSimulator_develop\Debug\arm_simulator.exe
+  arm_simulator.vcxproj -> C:\Users\obara\Documents\Visual Studio 2015\Projects\3DArmSimulator_develop\Debug\arm_simulator.pdb (Partial PDB)

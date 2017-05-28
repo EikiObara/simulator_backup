@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="header">
+      <UniqueIdentifier>{28b041d6-d0c6-45ed-9ba8-9ed7dafc5b28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{31e278da-5dd2-4473-aad9-31a1235739d7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\include\3Dobjects.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arm_simulator.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\camera_position.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\cone_simulator.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\glut.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_config.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_convertor.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_debag.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_matrix.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_quat.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_spline.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_target_point.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_vector.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kinema_debag.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kinematics.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\lu.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\plane.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\trapezoidal_interpolation.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\test_console.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\kine_trajectory.h">
+      <Filter>header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\3Dobjects.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arm_simulator.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\camera_position.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cone_simulator.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_convertor.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_debag.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_matrix.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_quat.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_spline.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_target_point.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_vector.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kinematics.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lu.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main_program.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\plane.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_console.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\trapezoidal_interpolation.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\kine_trajectory.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
