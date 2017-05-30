@@ -53,8 +53,7 @@ void CalcVelocitySpline(double *firstPos3, double *viaPos3, double *endPos3, dou
 		moveSpeed3[1] = (routeY.calc(nowT) - routeY.calc(beforeT));
 		moveSpeed3[2] = (routeZ.calc(nowT) - routeZ.calc(beforeT));
 
-		DisplayVector(3, moveSpeed3);
-
+		//DebagComment("calc velocity spline : moveSpeed3");	DisplayVector(3, moveSpeed3);
 	}
 	else if (currentTime > kine::TIME_LENGTH) {//Œ»ÝŽžŠÔ‚ª“®ìŽžŠÔ‚ð’´‚µ‚½‚çB
 		for (int i = 0; i < 3; ++i) moveSpeed3[i] = 0.0;

@@ -6,6 +6,15 @@
 #define __MY_CONFIG_H__
 
 namespace kine {
+	enum orbitMode {
+		CALIB_IN = 0,	//７．キャリブレーション治具上方10cmへ
+		CALIB_OUT = 1,	//１．キャリブレーション冶具から上方10㎝
+		INIT_POS = 2,	//２．キャリブレーション治具上方10cmから初期姿勢
+		PICK_POS = 3,	//３．初期姿勢から把持姿勢
+		PICKING = 4,	//４．把持姿勢から摘み取り動作を行う
+		CONVEY = 5	//５．摘み取り動作後収穫搬送機構へ
+	};
+
 	//通過点の設定値(初期位置と最終位置を含む点の数)
 	const int ROUTE_POINTS = 3;
 

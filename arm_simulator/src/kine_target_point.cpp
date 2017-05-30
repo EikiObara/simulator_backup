@@ -131,14 +131,8 @@ std::vector<double> TarPoints::graspDirection() {
 	return	returnV;
 }
 
-void TarPoints::pointAssignMid(double *vec3) {
-	mid = { vec3[0], vec3[1], vec3[2] };
-}
-
-void TarPoints::pointAssignTop(double *vec3) {
-	top = { vec3[0], vec3[1], vec3[2] };
-}
-
-void TarPoints::pointAssignBtm(double *vec3) {
-	btm = { vec3[0], vec3[1], vec3[2] };
+void TarPoints::assignMid(double *points3) {
+	for (int i = 0; i < 3; ++i) {
+		mid[i] = points3[i];
+	}
 }

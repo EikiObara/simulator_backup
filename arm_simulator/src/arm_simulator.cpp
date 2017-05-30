@@ -49,7 +49,7 @@ const double LOOP_SPAN = kine::TIME_SPAN * 1;
 const double VIA_LENGTH = 0.1;
 
 //さくらんぼの目標位置．単位はm(メートル)
-static TarPoints cherryPos;
+static TarPoints tarPos;
 
 //関節の角度を格納する
 static double currentJointRad[kine::MAXJOINT] = {};
@@ -65,30 +65,31 @@ static int loopnum = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 //ここから関数群
+
 //目標座標設定
 void pointInitialize() {
-	//初期姿勢時の手先位置
-	cherryPos.mid = { 0.601, -0.04, 0.0 };
 
 	//搬送部の位置
-	//cherryPos.mid = { 0.193, -0.435, -0.250 };
+	//tarPos.mid = { 0.193, -0.435, -0.250 };
 
 	//キャリブレーション治具から10cm引き抜いた所
-	//cherryPos.mid = { -0.116, -0.589, 0.0 };
+	//tarPos.mid = { -0.116, -0.589, 0.0 };
 
-	cherryPos.top = { cherryPos.mid[0] + 0.2,	cherryPos.mid[1] + 0.0,	cherryPos.mid[2] + 0.0 };
-	cherryPos.btm = { cherryPos.mid[0] - 0.0,	cherryPos.mid[1] - 0.2,	cherryPos.mid[2] - 0.0 };
+	//初期姿勢時の手先位置
+	tarPos.mid = { 0.601, -0.04, 0.0 };
+	tarPos.top = { tarPos.mid[0] + 0.2,	tarPos.mid[1] + 0.0,	tarPos.mid[2] + 0.0 };
+	tarPos.btm= { tarPos.mid[0] - 0.0,	tarPos.mid[1] - 0.2,	tarPos.mid[2] - 0.0 };
 }
 
 //アーム各関節の初期値を与える関数．グローバル変数へのアクセスなので．
 //プログラムのどこからでも起動できるから注意
 void CurrentJointRadInit() {
-	currentJointRad[0] = 60 * M_PI / 180 - M_PI / 2;//肩ロール
+	currentJointRad[0] = -30 * M_PI / 180 - M_PI / 2;//肩ロール
 	currentJointRad[1] = 0 * M_PI / 180 + M_PI / 2;	//肩ピッチ
 	currentJointRad[2] = 0 * M_PI / 180 + M_PI / 2;	//肩ヨー
-	currentJointRad[3] = 70 * M_PI / 180;			//肘
+	currentJointRad[3] = 40 * M_PI / 180;			//肘
 	currentJointRad[4] = 0 * M_PI / 180;			//手首ロール
-	currentJointRad[5] = -40 * M_PI / 180;			//手首ピッチ
+	currentJointRad[5] = -10 * M_PI / 180;			//手首ピッチ
 	currentJointRad[6] = 0 * M_PI / 180;			//手先ロール
 	currentJointRad[7] = 0;							//使わないパラメータ
 }
@@ -155,9 +156,9 @@ void DisplayParametors(kine::Kinematics *arm){
 
 	DebagBar();
 
-	printf("goal_x -> %3.8lf\n", cherryPos.mid[0]);
-	printf("goal_y -> %3.8lf\n", cherryPos.mid[1]);
-	printf("goal_z -> %3.8lf\n", cherryPos.mid[2]);
+	printf("goal_x -> %3.8lf\n", tarPos.mid[0]);
+	printf("goal_y -> %3.8lf\n", tarPos.mid[1]);
+	printf("goal_z -> %3.8lf\n", tarPos.mid[2]);
 
 	double finger[3] = {};
 	double wrist[3] = {};
@@ -165,9 +166,9 @@ void DisplayParametors(kine::Kinematics *arm){
 	arm->GetCoordinate(finger);
 	arm->GetwristCoordinate(wrist);
 
-	printf("error_X -> %3.8lf\n", finger[0] - cherryPos.mid[0]);
-	printf("error_Y -> %3.8lf\n", finger[1] - cherryPos.mid[1]);
-	printf("error_Z -> %3.8lf\n", finger[2] - cherryPos.mid[2]);
+	printf("error_X -> %3.8lf\n", finger[0] - tarPos.mid[0]);
+	printf("error_Y -> %3.8lf\n", finger[1] - tarPos.mid[1]);
+	printf("error_Z -> %3.8lf\n", finger[2] - tarPos.mid[2]);
 
 	DebagBar();
 
@@ -177,7 +178,7 @@ void DisplayParametors(kine::Kinematics *arm){
 	std::vector<double> target(3, 0);
 
 	for (int i = 0; i < 3; ++i) {
-		target[i] = cherryPos.top[i] - cherryPos.btm[i];
+		target[i] = tarPos.top[i] - tarPos.btm[i];
 	}
 
 	std::vector<double> vec;
@@ -220,6 +221,64 @@ int CalcInverseKinematics(double *speed, kine::Kinematics *arm, bool selfMotion)
 	return 0;
 }
 
+void SelectOrbit(kine::orbitMode mode) {//軌道計画関数
+	//DebagComment(" SelectOrbit : started ");
+
+	static int armState = 0;
+
+	//軌道計画　分岐
+	switch (mode)
+	{
+	case kine::CALIB_IN:	//キャリブレーション治具に収まったときの状態
+		tarPos.mid = { -0.11637242, -0.66695577, 0.0 };
+		tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] + 0.0 };
+		tarPos.btm = { tarPos.mid[0] - 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
+
+		armState = 1;
+
+		break;
+
+	case kine::CALIB_OUT:	//キャリブレーション治具から上方１０cm
+		tarPos.mid = { -0.11637242, -0.56695577, 0.0 };
+		tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] + 0.0 };
+		tarPos.btm = { tarPos.mid[0] - 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
+
+		armState = 0;
+
+		break;
+
+	case kine::INIT_POS:	//初期姿勢
+		tarPos.mid = { 0.61073360, 0.0419642, 0.0 };
+		tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] + 0.02,	tarPos.mid[2] + 0.0 };
+		tarPos.btm = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
+		break;
+
+	case kine::PICK_POS:	//把持位置
+
+		//カメラから座標をもらう必要あり
+
+		break;
+
+	case kine::PICKING:	//もぎ取り動作
+
+		//カメラからもらった座標で計算する
+
+		break;
+
+	case kine::CONVEY:	//搬送部
+		tarPos.mid = { 0.193, -0.435, -0.250 };
+		tarPos.top = { tarPos.mid[0] + 0.0,	tarPos.mid[1] + 0.02,	tarPos.mid[2] - 0.02 };
+		tarPos.btm = { tarPos.mid[0] + 0.0,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.02 };
+		break;
+
+	default:
+		DebagComment(" SelectOrbit : no select ");
+		break;
+	}
+
+	//DebagComment(" SelectOrbit : finished ");
+}
+
 //指先移動軌道を計算
 void PositionSpeed(double *currentTime, kine::Kinematics *arm, double *speed) {
 	//手先移動速度の算出
@@ -231,10 +290,11 @@ void PositionSpeed(double *currentTime, kine::Kinematics *arm, double *speed) {
 
 	//手先位置
 	arm->GetCoordinate(firstPos);
-	for (int i = 0; i < 3; ++i) endPos[i] = cherryPos.mid[i];
+
+	for (int i = 0; i < 3; ++i) endPos[i] = tarPos.mid[i];
 
 	//経由点の計算
-	CalcViaPos(cherryPos, VIA_LENGTH, viaPos);
+	CalcViaPos(tarPos, VIA_LENGTH, viaPos);
 
 	//直線軌道
 	//CalcVelocityLinear(firstPos, endPos, *currentTime, positionBuf);
@@ -253,7 +313,7 @@ void PostureSpeed(double *currentTime, double *speed) {
 	//speedは　3 -> roll, 4 -> yaw , 5 -> pitch
 	double postureBuf[3] = {};
 
-	CalcVelocityPosture(currentJointRad, &cherryPos, *currentTime, postureBuf);
+	CalcVelocityPosture(currentJointRad, &tarPos, *currentTime, postureBuf);
 	//DebagComment("posture buffer");	DisplayVector(3, postureBuf);
 
 	//計算した指先軌道，手先姿勢動作速度の代入
@@ -294,6 +354,12 @@ void CalcCore(double *currentTime, kine::Kinematics *arm, bool selfMotion, doubl
 		}
 
 		//書き出し用配列
+		double positionBuf[3] = {};
+		arm->GetCoordinate(positionBuf);
+
+		positionRec[loopnum * 4 + 0] = *currentTime;
+		for (int i = 1; i < 4; ++i) positionRec[loopnum * 4 + i] = positionBuf[i - 1];
+
 		velocityRec[loopnum * 8 + 0] = *currentTime;	//デバッグ用
 		for (int i = 1; i < 8; ++i) velocityRec[8 * loopnum + i] = speed[i - 1];
 
@@ -316,33 +382,30 @@ void CalcCore(double *currentTime, kine::Kinematics *arm, bool selfMotion, doubl
 void ChengeGoalValue(kine::Kinematics *arm){
 	printf("Started --- Input Amount of movement ---\n");
 
-	//軸選択
-	double axisInputBuf = 0;
+	//軸選択フラグ
+	int axisChoiseFlag = -1;
 
-	//
-	int axisChoiseNum = -1;
-
-	//
+	//文字受取バッファ
 	char chooseAxis[2];
 
 	while (1) {
-		axisChoiseNum = -1;
+		axisChoiseFlag = -1;
 
 		printf("enter to OVER WRITE Axis key (X or Y or Z)\n");
 		printf("when finished, enter \"Q\" \n ->");
 		fgets(chooseAxis, 2, stdin);
 
 		if (chooseAxis[0] == 'x' || chooseAxis[0] == 'X') {
-			printf("Input axis X \n");	axisChoiseNum = 0;
+			printf("Input axis X \n");	axisChoiseFlag = 0;
 		}
 		else if (chooseAxis[0] == 'y' || chooseAxis[0] == 'Y') {
-			printf("Input axis Y \n");	axisChoiseNum = 1;
+			printf("Input axis Y \n");	axisChoiseFlag = 1;
 		}
 		else if (chooseAxis[0] == 'z' || chooseAxis[0] == 'Z') {
-			printf("Input axis Z \n");	axisChoiseNum = 2;
+			printf("Input axis Z \n");	axisChoiseFlag = 2;
 		}
 		else if (chooseAxis[0] == 'i') {
-			printf("Input 'I' (Reset the goal point to now place\n");	axisChoiseNum = 3;
+			printf("Input 'I' (Reset the goal point to now place\n");	axisChoiseFlag = 3;
 		}
 		else if (chooseAxis[0] == 'q') {
 			printf("Exit enter Amount of movement\n\n\n");
@@ -353,20 +416,21 @@ void ChengeGoalValue(kine::Kinematics *arm){
 			continue; 
 		}
 
-		if (axisChoiseNum > -1 && axisChoiseNum < 3) {
+		if (axisChoiseFlag > -1 && axisChoiseFlag < 3) {
 			printf("enter Value of movement [mm]\n-> ");
+			double axisInputBuf = 0;
 
 			scanf("%lf", &axisInputBuf);
 
 			getchar();
 
 			axisInputBuf *= 0.001;
-			//cherryPos[i] += axisInputBuf;
-			cherryPos.mid[axisChoiseNum] += axisInputBuf;
+			//tarPos[i] += axisInputBuf;
+			tarPos.mid[axisChoiseFlag] += axisInputBuf;
 
 			printf("finished enter value\n\n\n");
 		}
-		else if (axisChoiseNum = 3) {
+		else if (axisChoiseFlag = 3) {
 			double handPositionCoord[3] = {};
 
 			getchar();
@@ -377,10 +441,10 @@ void ChengeGoalValue(kine::Kinematics *arm){
 
 			arm->GetCoordinate(handPositionCoord);
 
-			cherryPos.pointAssignMid(handPositionCoord);
+			tarPos.assignMid(handPositionCoord);
 
 			printf("reset complite\n");
-			axisChoiseNum = -1;
+			axisChoiseFlag = -1;
 		}
 	}
 }
@@ -392,7 +456,7 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 
 	//肘，手首，手先位置を格納する
 	static kine::Kinematics arm;
-	
+
 	//手先速度格納配列
 	double speed[7] = {};
 
@@ -413,7 +477,7 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 	const SoEvent *event = eventCB->getEvent();
 
 	//関節変数の初期化
-	if (currentJointRadInitSwitch == TRUE) { 
+	if (currentJointRadInitSwitch == TRUE) {
 		CurrentJointRadInit();
 		currentJointRadInitSwitch = FALSE;
 		pointInitialize();
@@ -438,6 +502,8 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 	}
 	*/
 
+
+	//目標位置の書き換え
 	if (SO_KEY_PRESS_EVENT(event, T)) {
 		ChengeGoalValue(&arm);
 		CurrentTime = 0;	//Reset VelocityRegulation
@@ -458,21 +524,21 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 		DisplayDescription();
 	}
 
-	//セルフモーション
-	if (SO_KEY_PRESS_EVENT(event, S)) {	
-		calcSwitch = TRUE;	
+	//セルフモーション	S(self)
+	if (SO_KEY_PRESS_EVENT(event, S)) {
+		calcSwitch = TRUE;
 		selfMotionOn = 1;
 		speed[6] = M_PI * kine::TIME_SPAN;
 	}
 	if (SO_KEY_PRESS_EVENT(event, D)) {
-		calcSwitch = TRUE;	
+		calcSwitch = TRUE;
 		selfMotionOn = 1;
 		speed[6] = -M_PI * kine::TIME_SPAN;
 	}
 
 	//手先操作
 	if (SO_KEY_PRESS_EVENT(event, J)) {
-		calcSwitch = TRUE;	
+		calcSwitch = TRUE;
 		selfMotionOn = 1;
 		speed[4] = -M_PI * kine::TIME_SPAN;
 		speed[6] = speed[4] / 3;
@@ -510,13 +576,49 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 	}
 
 	//計算プログラム開始
-	if (calcSwitch == TRUE) { 
+	if (calcSwitch == TRUE) {
 		CalcCore(&CurrentTime, &arm, selfMotionOn, speed);
 	}
-	
+
 	if (SO_KEY_PRESS_EVENT(event, W)) {
-		WriteOut();		
+		WriteOut();
 	}
+
+	
+
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_0)) {
+		DebagComment("key 0 : caliblation fixture -> IN");
+		SelectOrbit(kine::CALIB_IN);
+		CurrentTime = 0.0;
+	}
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_1)) {
+		DebagComment("key 1 : caliblation fixture -> OUT");
+		SelectOrbit(kine::CALIB_OUT);
+		CurrentTime = 0.0;
+	}
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_2)) {
+		DebagComment("key 2 : initial position");
+		SelectOrbit(kine::INIT_POS);
+		CurrentTime = 0.0;
+	}
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_3)) {
+		DebagComment("key 3 : pick up position");
+		SelectOrbit(kine::PICK_POS);
+		CurrentTime = 0.0;
+	}
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_4)) {
+		DebagComment("key 4 : picking action");
+		SelectOrbit(kine::PICKING);
+		CurrentTime = 0.0;
+	}
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_5)) {
+		DebagComment("key 4 : conveyor position");
+		SelectOrbit(kine::CONVEY);
+		CurrentTime = 0.0;
+	}
+
+
+
 
 	//プログラム終了
 	if (SO_KEY_PRESS_EVENT(event, Q)) { 
@@ -549,6 +651,12 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 	return sb;
 }
 */
+
+
+
+
+
+
 
 
 
@@ -607,7 +715,7 @@ static void RedPointSensorCallback(void *b_data8, SoSensor *) {
 static void GoalPointSensorCallback(void *b_data, SoSensor *) {
 	SoTranslation *trans = (SoTranslation*)b_data;
 
-	trans->translation.setValue(cherryPos.mid[0], cherryPos.mid[1], cherryPos.mid[2]);
+	trans->translation.setValue(tarPos.mid[0], tarPos.mid[1], tarPos.mid[2]);
 }
 
 void ArmSimulator(int argc){
@@ -615,6 +723,8 @@ void ArmSimulator(int argc){
 	DisplayDescription();
 
 	pointInitialize();
+
+	SelectOrbit(kine::CALIB_IN);
 
 	//画面の初期化
 	HWND myWindow = SoWin::init("");
@@ -640,8 +750,8 @@ void ArmSimulator(int argc){
 	eventcallback->addEventCallback(SoKeyboardEvent::getClassTypeId(), SimulatorKeyPressCB, root);
 
 	//目標描画
-	SoSeparator *cherryPosSep = new SoSeparator;
-	GoalCherry(cherryPos.mid, cherryPosSep);
+	SoSeparator *tarPosSep = new SoSeparator;
+	GoalCherry(tarPos.mid, tarPosSep);
 
 	//カメラ位置確認用赤玉
 	SoSeparator *redPointSep = new SoSeparator;
@@ -662,9 +772,9 @@ void ArmSimulator(int argc){
 	SoSeparator *midSep = new SoSeparator;
 	SoSeparator *btmSep = new SoSeparator;
 
-	PointObj(cherryPos.top, topSep);
-	PointObj(cherryPos.mid, midSep);
-	PointObj(cherryPos.btm, btmSep);
+	PointObj(tarPos.top, topSep);
+	PointObj(tarPos.mid, midSep);
+	PointObj(tarPos.btm, btmSep);
 
 	SoTranslation *goalPointTrans = new SoTranslation;
 	SoTimerSensor *goalPointTransMoveSensor = new SoTimerSensor(GoalPointSensorCallback, goalPointTrans);
