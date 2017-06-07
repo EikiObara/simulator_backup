@@ -4,29 +4,66 @@
 
 //この下にテストしたいプログラムのインクルードを書こう
 #include "include\kine_debag.h"
-#include "include\kine_quat.h"
+//#include "include\kine_quat.h"
 #include "include\trapezoidal_interpolation.h"
-#include "include\kine_config.h"
-#include "include\kine_trajectory.h"
+//#include "include\kine_config.h"
+//#include "include\kine_trajectory.h"
+#include "include\kine_spline.h"
 
-#include <stdio.h>
+#include <cstdio>
+#include <cmath>
+#include <ctime>
+#include <cstdlib>
 
-double outQ[4 * 100000] = {};
-double outM[16 * 100000] = {};
-double outE[3 * 100000] = {};
+double output[10000] = {};
+
+const int nodeValue = 3;
+
+const double span = 0.01;
+
+static void InitRand() {
+	srand((unsigned int)time(NULL));
+}
+
+static int randamValue(int maxValue) {
+	return rand() % maxValue + 1;
+}
 
 void TestConsole(void){
 
-	double f[3] = { 1,2,3 };
-	double v[3] = { 4,5,6 };
-	double e[3] = { 9,8,7 };
+	InitRand();
 
-	for (double i = 0; i < 1; i += 0.1) {
-		double buf[3] = {};
-		TrapeInterpolate(1, 1, i);
-		CalcVelocitySpline(f, v, e, i, buf);
-		DisplayVector(3, buf);
+	double x[nodeValue];
+	int loopNum = 0;
+
+	//for (int i = 0; i < nodeValue; ++i) x[i] = randamValue(10);
+	
+	x[0] = 1;
+	x[1] = 5;
+	x[2] = 5;
+
+
+	DisplayVector(nodeValue, x);
+
+	double nowT = 0;
+	double beforeT = 0;
+
+	double bufNow = 0;
+	double bufBefore = 0;
+
+	for (double t = 0; t <= 1; t += span) {
+		beforeT = nowT;
+		nowT += TrapeInterpolate(1, 1, t);
+
+		bufNow = BSpline(x, nodeValue, nowT);
+		bufBefore = BSpline(x, nodeValue, beforeT);
+
+		output[loopNum] = bufNow - bufBefore;
+
+		++loopNum;
 	}
+	OutputMatrixTxt(output, 1, loopNum, "BSpline_");
+
 }
 
 

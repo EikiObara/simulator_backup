@@ -10,6 +10,124 @@
 #include "include\kine_debag.h"
 #include "include\kine_vector.h"
 
+void SelectTarget(kine::targetType type, TarPoints *tarPos) {
+	//軌道計画関数
+	//DebagComment(" SelectOrbit : started ");
+
+	//軌道計画　分岐
+	switch (type)
+	{
+	case kine::CALIB_IN:	//キャリブレーション治具に収まったときの状態
+		tarPos->mid = { -0.11637242, -0.66695577, 0.0 };
+		tarPos->top = { tarPos->mid[0] + 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] + 0.0 };
+		tarPos->btm = { tarPos->mid[0] - 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.0 };
+
+		break;
+
+	case kine::CALIB_OUT:	//キャリブレーション治具から上方１０cm
+		tarPos->mid = { -0.11637242, -0.66695577 + 0.1, 0.0 };
+		tarPos->top = { tarPos->mid[0] + 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] + 0.0 };
+		tarPos->btm = { tarPos->mid[0] - 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.0 };
+
+		break;
+
+	case kine::CALIB_RIGHT:	//キャリブレーション治具から上方１０cm
+		tarPos->mid = { -0.11637242, -0.66695577 + 0.1, 0.1 };
+		tarPos->top = { tarPos->mid[0] + 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] + 0.0 };
+		tarPos->btm = { tarPos->mid[0] - 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.0 };
+
+		break;
+
+	//case kine::INIT_POS:	//初期姿勢
+	//	tarPos->mid = { 0.5, -0.179, 0.2 };
+	//	tarPos->top = { tarPos->mid[0] + 0.02,	tarPos->mid[1] + 0.02,	tarPos->mid[2] + 0.0 };
+	//	tarPos->btm = { tarPos->mid[0] + 0.015,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.0 };
+	//	break;
+
+	case kine::INIT_POS:	//初期姿勢
+		tarPos->mid = { 0.61, 0.004, 0.0 };
+		tarPos->top = { tarPos->mid[0] + 0.02,	tarPos->mid[1] + 0.02,	tarPos->mid[2] + 0.0 };
+		tarPos->btm = { tarPos->mid[0] + 0.015,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.0 };
+		break;
+
+	case kine::PICK_POS:	//把持位置
+
+		//カメラから座標をもらう．
+		tarPos->mid = { 0.6107 + 0.05, 0.0419, 0.0 };
+		tarPos->top = { tarPos->mid[0] + 0.02,	tarPos->mid[1] + 0.02,	tarPos->mid[2] + 0.0 };
+		tarPos->btm = { tarPos->mid[0] + 0.02,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.0 };
+
+		break;
+
+	case kine::PICKING:	//もぎ取り動作
+		//カメラから貰った座標で方向を決める．
+
+		break;
+
+	case kine::CONVEY:	//搬送部
+
+		tarPos->mid = { 0.193, -0.435, -0.250 };
+		tarPos->top = { tarPos->mid[0] + 0.0,	tarPos->mid[1] + 0.02,	tarPos->mid[2] - 0.02 };
+		tarPos->btm = { tarPos->mid[0] + 0.0,	tarPos->mid[1] - 0.02,	tarPos->mid[2] - 0.02 };
+		break;
+
+	default:
+		
+		DebagComment("*** WARNING ***\n*** SelectTarget : NO SELECT ***");
+
+		break;
+	}
+
+	//DebagComment(" SelectOrbit : finished ");
+}
+
+class Trajectory {
+public:
+
+	Trajectory();
+	~Trajectory();
+
+	void initNodes(double *nodes, int nodeNum);
+	double spline(double currentTime);
+	double linear(double currentTime);
+	double B_Spline(double currentTime);
+
+private:
+	Spline sp;
+	std::vector<double> points;
+};
+
+Trajectory::Trajectory(){
+	points.assign(1, 0);
+}
+
+Trajectory::~Trajectory() {
+}
+
+void Trajectory::initNodes(double *nodes, int nodeNum) {
+	points.resize(nodeNum);
+	for (int i = 0; i < nodeNum; ++i) {
+		points[i] = nodes[i];
+	}
+	sp.initPoint(nodes, nodeNum);
+}
+
+double Trajectory::spline(double currentTime) {
+	// spline.calc(0 <= t <=1) <- value area
+	return sp.calc(TrapeInterpolate(1, kine::POSITION_CHANGE_TIME, currentTime));
+}
+
+double Trajectory::linear(double currentTime) {
+	double buf = points.back() - points.front();
+
+	return TrapeInterpolate(buf, kine::POSITION_CHANGE_TIME, currentTime);
+}
+
+double Trajectory::B_Spline(double currentTime) {
+	double timeBuf = TrapeInterpolate(1, kine::POSITION_CHANGE_TIME, currentTime);
+	return BSpline(points, points.size(), timeBuf);
+}
+
 //三点の情報を与えると，経由点を持つスプライン曲線を生成する．
 void CalcVelocitySpline(double *firstPos3, double *viaPos3, double *endPos3, double currentTime, double *moveSpeed3) {
 	static double nowT = 0;
@@ -44,7 +162,7 @@ void CalcVelocitySpline(double *firstPos3, double *viaPos3, double *endPos3, dou
 		//DebagComment("move velocity calculation");
 		beforeT = nowT;
 		//動作は節点数ではなくリンクの数
-		nowT += TrapeInterpolate(kine::ROUTE_LINK, kine::TIME_LENGTH, currentTime);
+		nowT += TrapeInterpolate(kine::ROUTE_LINK, kine::POSITION_CHANGE_TIME, currentTime);
 
 		//printf("beforeT = %lf\n", beforeT);
 		//printf("nowT = %lf\n", nowT);
@@ -82,6 +200,44 @@ void CalcVelocityLinear(double *firstPos3, double *endPos3, double currentTime, 
 	for (int i = 0; i < 3; ++i) {
 		moveSpeed3[i] = TrapeInterpolate(p2pLength[i], kine::TIME_LENGTH, currentTime);
 	}
+}
+
+//なんか使えない・・・
+void CalcVelocitySplineWithB(double *firstPos3, double *viaPos3, double *endPos3, double currentTime, double *moveSpeed3) {
+	static double nowT = 0;
+	static double beforeT = 0;
+
+	double nowPos[3] = {};
+	double beforePos[3] = {};
+
+	static double pointX[3] = {};
+	static double pointY[3] = {};
+	static double pointZ[3] = {};
+
+	if (currentTime == 0.0) {
+		pointX[0] = firstPos3[0];
+		pointX[1] = viaPos3[0];
+		pointX[2] = endPos3[0];
+		pointY[0] = firstPos3[1];
+		pointY[1] = viaPos3[1];
+		pointY[2] = endPos3[1];
+		pointZ[0] = firstPos3[2];
+		pointZ[1] = viaPos3[2];
+		pointZ[2] = endPos3[2];
+
+		beforeT = 0.0;
+		nowT = 0.0;
+	}
+
+	beforeT = nowT;
+	//nowT = currentTime;
+	nowT = TrapeInterpolate(1, kine::POSITION_CHANGE_TIME, currentTime);
+
+	moveSpeed3[0] = BSpline(pointX, 3, nowT) - BSpline(pointX, 3, beforeT);
+	moveSpeed3[1] = BSpline(pointY, 3, nowT) - BSpline(pointY, 3, beforeT);
+	moveSpeed3[2] = BSpline(pointZ, 3, nowT) - BSpline(pointZ, 3, beforeT);
+
+	//DisplayVector(3, moveSpeed3);
 }
 
 //velocity regulation posture関数内で使用するクォータニオン生成関数(初期姿勢)
@@ -193,6 +349,8 @@ void CalcVelocityPosture(double *curJointRad, TarPoints *targetCoord, double cur
 		}
 	}
 
+
+
 	//監視フラグによる分岐(false)
 	if (generateSpeedFlag == false) {
 		for (int i = 0; i < 3; ++i) postureSpeed[i] = 0.0;
@@ -210,12 +368,12 @@ void CalcVelocityPosture(double *curJointRad, TarPoints *targetCoord, double cur
 			nowValue = 0.0;
 			nowSlerpQ.assign(initPostureQ);
 		}
-		else if (currentTime >= kine::TIME_SPAN && currentTime < kine::TIME_LENGTH) {
+		else if (currentTime >= kine::TIME_SPAN) {
 			//現在時間
 			//printf("currentTime-> %lf\n", currentTime);
 
 			//Slerpの０～１までの補間値
-			nowValue += TrapeInterpolate(1, kine::TIME_LENGTH, currentTime);
+			nowValue += TrapeInterpolate(1, kine::POSTURE_CHANGE_TIME, currentTime);
 
 			//DebagComment("now value");	printf("-> %3.9lf\n", nowValue);
 
@@ -266,9 +424,7 @@ void CalcVelocityPosture(double *curJointRad, TarPoints *targetCoord, double cur
 
 			//DebagComment(" posture speed ");	DisplayVector(3, postureSpeed);
 		}
-		else if (currentTime >= kine::TIME_LENGTH) for (int i = 0; i < 3; ++i) {
-			postureSpeed[i] = 0.0;
-		}
+		//else if (currentTime >= kine::POSTURE_CHANGE_TIME) for (int i = 0; i < 3; ++i) postureSpeed[i] = 0.0;
 	}
 
 	//DebagComment("posture speed");	DisplayVector(3, postureSpeed);
@@ -276,6 +432,7 @@ void CalcVelocityPosture(double *curJointRad, TarPoints *targetCoord, double cur
 	//DebagComment("calc velocity posture : finished\n");
 }
 
+//
 void CalcViaPos(TarPoints targetPoints, double via2endLength, double *returnPos3) {
 	std::vector<double> graspV;
 	std::vector<double> modifyV;
@@ -288,3 +445,5 @@ void CalcViaPos(TarPoints targetPoints, double via2endLength, double *returnPos3
 		returnPos3[i] = targetPoints.mid[i] - modifyV[i];
 	}
 }
+
+

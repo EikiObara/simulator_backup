@@ -11,7 +11,7 @@
 
 Matrix::Matrix() {
 	mRow = mCol = mNum = 0;
-	m.resize(1);
+	m.resize(100);
 	mType = 0;
 }
 
@@ -134,7 +134,7 @@ void Matrix::CreateTriMatrix(int myRow, int myColumn, int myMatSize) {
 	//printf("create tri matrix finished\n");
 }
 
-bool Matrix::InverseMatrix(Matrix &returnMat) {
+bool Matrix::InverseMatrix(Matrix *returnMat) {
 	//std::cout << "InverseMatrix started\n";
 	double d = 0;
 	double col[10] = {};
@@ -174,7 +174,7 @@ bool Matrix::InverseMatrix(Matrix &returnMat) {
 		Lubksb(m, mRow, indx, col);
 
 		for (int i = 0; i < mRow; ++i){
-			returnMat.Mat2D(i,j, col[i]);
+			returnMat->Mat2D(i,j, col[i]);
 		}
 	}
 	return check;

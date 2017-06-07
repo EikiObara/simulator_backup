@@ -1,5 +1,7 @@
 // 2017/04/28
 // created by eiki obara
+
+
 #include <cmath>
 
 #include "include\kinematics.h"
@@ -134,5 +136,11 @@ std::vector<double> TarPoints::graspDirection() {
 void TarPoints::assignMid(double *points3) {
 	for (int i = 0; i < 3; ++i) {
 		mid[i] = points3[i];
+	}
+}
+
+void TarPoints::getMidPoint(double *point3) {
+	for (int i = 0; i < 3; ++i) {
+		point3[i] = mid[i];
 	}
 }

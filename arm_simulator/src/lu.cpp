@@ -11,7 +11,7 @@ const int PLUS_NULL = 1;
 
 double *Dvector(long nh) {
 
-	double *v = (double *)malloc(nh*sizeof(double));
+	double *v = new double[nh];
 
 	if (!v)	printf("malloc failure in vector()\n");
 
@@ -20,7 +20,7 @@ double *Dvector(long nh) {
 
 int *Ivector(long nh) {
 
-	int *v = (int *)malloc(nh*sizeof(int));
+	int *v = new int[nh];
 
 	if (!v)	printf("malloc failure in vector()\n");
 

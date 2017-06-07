@@ -17,7 +17,7 @@ void RotMat2Quat(const double *rotMat, Quat &returnQuat);
 
 //ベクトル回転行列変換
 //渡すベクトルは単位ベクトル(ノルムが一)であるように
-void DirectVector2RotMat(std::vector<double> directionX, std::vector<double> directionY, double *matrix);
+void DirectVector2RotMat(std::vector<double> directionX, std::vector<double> directionZ, double *matrix);
 
 
 #endif // !__CONVERTOR_H__

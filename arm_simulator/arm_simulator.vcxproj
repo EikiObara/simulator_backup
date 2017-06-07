@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClInclude Include="src\include\3Dobjects.h" />
     <ClInclude Include="src\include\arm_simulator.h" />
-    <ClInclude Include="src\include\camera_position.h" />
     <ClInclude Include="src\include\cone_simulator.h" />
     <ClInclude Include="src\include\glut.h" />
     <ClInclude Include="src\include\kinematics.h" />
@@ -43,7 +42,6 @@
   <ItemGroup>
     <ClCompile Include="src\3Dobjects.cpp" />
     <ClCompile Include="src\arm_simulator.cpp" />
-    <ClCompile Include="src\camera_position.cpp" />
     <ClCompile Include="src\cone_simulator.cpp" />
     <ClCompile Include="src\kinematics.cpp" />
     <ClCompile Include="src\kine_convertor.cpp" />

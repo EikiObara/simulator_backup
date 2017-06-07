@@ -22,16 +22,17 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "include\camera_position.h"
-#include "include\kine_target_point.h"
-#include "include\kine_debag.h"
-#include "include\kinematics.h"
-#include "include\kine_vector.h"
-#include "include\3Dobjects.h"
-#include "include\kine_config.h"
-#include "include\kine_trajectory.h"
+#include "include\kinematics.h"			//運動学クラス
+#include "include\kine_config.h"		//定数値をまとめたファイル
+#include "include\kine_debag.h"			//デバッグ関数をまとめたファイル
+#include "include\kine_convertor.h"		//数値変換計算関数
+#include "include\kine_target_point.h"	//目標座標格納クラス
+#include "include\kine_trajectory.h"	//軌道生成関数をまとめたクラス
+#include "include\kine_vector.h"		//ベクトル演算を扱うクラス
 
-#include <stdio.h>
+#include "include\3Dobjects.h"
+
+#include <cstdio>
 #include <stdlib.h>
 #include <Inventor\Win\SoWin.h>
 #include <Inventor\Win\viewers\SoWinExaminerViewer.h>
@@ -43,10 +44,8 @@
 //coin3Dの引数が変えられないからグローバルにするしか無いものをここに置く
 
 //計算結果の描画を何回に一回にするか
-const double LOOP_SPAN = kine::TIME_SPAN * 1;
+const double LOOP_SPAN = kine::TIME_SPAN * 10;
 
-//経由点を目標点の半径いくらに設定するか．単位はメートル
-const double VIA_LENGTH = 0.1;
 
 //さくらんぼの目標位置．単位はm(メートル)
 static TarPoints tarPos;
@@ -55,11 +54,14 @@ static TarPoints tarPos;
 static double currentJointRad[kine::MAXJOINT] = {};
 
 //手先カメラの位置
-static double handCameraCoordinate[3] = {};
+//static double handCameraCoordinate[3] = {};
+
+//軌道選択
+static int trajectoryPattern = 0;
 
 //Recording array
-double positionRec[3 * 100000] = {};
-double velocityRec[7 * 100000] = {};
+//double positionRec[3 * 100000] = {};
+//double velocityRec[7 * 100000] = {};
 
 static int loopnum = 0;
 
@@ -68,22 +70,25 @@ static int loopnum = 0;
 
 //目標座標設定
 void pointInitialize() {
-
-	//搬送部の位置
-	//tarPos.mid = { 0.193, -0.435, -0.250 };
-
-	//キャリブレーション治具から10cm引き抜いた所
-	//tarPos.mid = { -0.116, -0.589, 0.0 };
-
 	//初期姿勢時の手先位置
-	tarPos.mid = { 0.601, -0.04, 0.0 };
-	tarPos.top = { tarPos.mid[0] + 0.2,	tarPos.mid[1] + 0.0,	tarPos.mid[2] + 0.0 };
-	tarPos.btm= { tarPos.mid[0] - 0.0,	tarPos.mid[1] - 0.2,	tarPos.mid[2] - 0.0 };
+	tarPos.mid = { -0.11637242, -0.66695577, 0.0 };
+	tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] + 0.0 };
+	tarPos.btm = { tarPos.mid[0] - 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
 }
 
 //アーム各関節の初期値を与える関数．グローバル変数へのアクセスなので．
 //プログラムのどこからでも起動できるから注意
 void CurrentJointRadInit() {
+	currentJointRad[0] = 60 * M_PI / 180 - M_PI / 2;//肩ロール
+	currentJointRad[1] = 0 * M_PI / 180 + M_PI / 2;	//肩ピッチ
+	currentJointRad[2] = 0 * M_PI / 180 + M_PI / 2;	//肩ヨー
+	currentJointRad[3] = 70 * M_PI / 180;			//肘
+	currentJointRad[4] = 0 * M_PI / 180;			//手首ロール
+	currentJointRad[5] = -40 * M_PI / 180;			//手首ピッチ
+	currentJointRad[6] = 0 * M_PI / 180;			//手先ロール
+	currentJointRad[7] = 0;							//使わないパラメータ
+
+	/*
 	currentJointRad[0] = -30 * M_PI / 180 - M_PI / 2;//肩ロール
 	currentJointRad[1] = 0 * M_PI / 180 + M_PI / 2;	//肩ピッチ
 	currentJointRad[2] = 0 * M_PI / 180 + M_PI / 2;	//肩ヨー
@@ -92,13 +97,24 @@ void CurrentJointRadInit() {
 	currentJointRad[5] = -10 * M_PI / 180;			//手首ピッチ
 	currentJointRad[6] = 0 * M_PI / 180;			//手先ロール
 	currentJointRad[7] = 0;							//使わないパラメータ
+	*/
+	/*
+	currentJointRad[0] = 45 * M_PI / 180 - M_PI / 2;//肩ロール
+	currentJointRad[1] = -36 * M_PI / 180 + M_PI / 2;	//肩ピッチ
+	currentJointRad[2] = 0 * M_PI / 180 + M_PI / 2;	//肩ヨー
+	currentJointRad[3] = 43 * M_PI / 180;			//肘
+	currentJointRad[4] = 107 * M_PI / 180;			//手首ロール
+	currentJointRad[5] = -60 * M_PI / 180;			//手首ピッチ
+	currentJointRad[6] = -88 * M_PI / 180;			//手先ロール
+	currentJointRad[7] = 0;							//使わないパラメータ
+	*/
 }
 
 void WriteOut() {
 	printf("output velocity start\n");
 
 	//OutputMatrixTxt(positionRec, 3, loopnum, "handPosi_");
-	OutputMatrixTxt(velocityRec, 8, loopnum, "Velo_");
+	//OutputMatrixTxt(velocityRec, 8, loopnum, "Velo_");
 
 	printf("output velocity ended\n");
 }
@@ -175,16 +191,9 @@ void DisplayParametors(kine::Kinematics *arm){
 	std::vector<double> f = { finger[0], finger[1], finger[2]};
 	std::vector<double> w = { wrist[0], wrist[1],wrist[2] };
 	std::vector<double> initPos = { 1,0,0 };
-	std::vector<double> target(3, 0);
-
-	for (int i = 0; i < 3; ++i) {
-		target[i] = tarPos.top[i] - tarPos.btm[i];
-	}
 
 	std::vector<double> vec;
-
 	vec = SubVector(f, w);
-
 	VectorNormalize(vec);
 
 	DebagComment("hand direction vector");
@@ -194,14 +203,31 @@ void DisplayParametors(kine::Kinematics *arm){
 
 	double postureMatrix[16] = {};
 	arm->GetHandHTM(currentJointRad, postureMatrix);
-
 	DisplayRegularMatrix(4, postureMatrix);
+
+	DebagBar();
+
+	std::vector<double> z;
+	std::vector<double> x;
+	
+	z = tarPos.graspDirection();
+
+	x = SubVector(tarPos.top, tarPos.btm);
+	
+	double bufm[16];
+
+	DirectVector2RotMat(x, z, bufm);
+
+	DisplayRegularMatrix(4, bufm);
+
 }
 
 //逆運動学を計算
 int CalcInverseKinematics(double *speed, kine::Kinematics *arm, bool selfMotion) {
 	//エラーチェック
 	int errorCheck = 0;
+
+	//selfMotion = 0;
 
 	//CalcIKから返ってくる計算値
 	double nextRadVelocity[kine::MAXJOINT] = {};
@@ -210,7 +236,7 @@ int CalcInverseKinematics(double *speed, kine::Kinematics *arm, bool selfMotion)
 	if (selfMotion == 1) errorCheck = arm->CalcIK(currentJointRad, speed, nextRadVelocity);
 	
 	//擬似逆行列法
-	//else if (selfMotion == 0) errorCheck = arm->CalcPIK(currentJointRad, speed, nextRadVelocity);
+	else if (selfMotion == 0) errorCheck = arm->CalcPIK(currentJointRad, speed, nextRadVelocity);
 	
 	//エラーチェック
 	if (errorCheck > 0) return 1;
@@ -219,64 +245,6 @@ int CalcInverseKinematics(double *speed, kine::Kinematics *arm, bool selfMotion)
 	for (int i = 0; i < kine::MAXJOINT - 1; i++)	currentJointRad[i] += nextRadVelocity[i];
 	
 	return 0;
-}
-
-void SelectOrbit(kine::orbitMode mode) {//軌道計画関数
-	//DebagComment(" SelectOrbit : started ");
-
-	static int armState = 0;
-
-	//軌道計画　分岐
-	switch (mode)
-	{
-	case kine::CALIB_IN:	//キャリブレーション治具に収まったときの状態
-		tarPos.mid = { -0.11637242, -0.66695577, 0.0 };
-		tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] + 0.0 };
-		tarPos.btm = { tarPos.mid[0] - 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
-
-		armState = 1;
-
-		break;
-
-	case kine::CALIB_OUT:	//キャリブレーション治具から上方１０cm
-		tarPos.mid = { -0.11637242, -0.56695577, 0.0 };
-		tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] + 0.0 };
-		tarPos.btm = { tarPos.mid[0] - 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
-
-		armState = 0;
-
-		break;
-
-	case kine::INIT_POS:	//初期姿勢
-		tarPos.mid = { 0.61073360, 0.0419642, 0.0 };
-		tarPos.top = { tarPos.mid[0] + 0.02,	tarPos.mid[1] + 0.02,	tarPos.mid[2] + 0.0 };
-		tarPos.btm = { tarPos.mid[0] + 0.02,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.0 };
-		break;
-
-	case kine::PICK_POS:	//把持位置
-
-		//カメラから座標をもらう必要あり
-
-		break;
-
-	case kine::PICKING:	//もぎ取り動作
-
-		//カメラからもらった座標で計算する
-
-		break;
-
-	case kine::CONVEY:	//搬送部
-		tarPos.mid = { 0.193, -0.435, -0.250 };
-		tarPos.top = { tarPos.mid[0] + 0.0,	tarPos.mid[1] + 0.02,	tarPos.mid[2] - 0.02 };
-		tarPos.btm = { tarPos.mid[0] + 0.0,	tarPos.mid[1] - 0.02,	tarPos.mid[2] - 0.02 };
-		break;
-
-	default:
-		DebagComment(" SelectOrbit : no select ");
-		break;
-	}
-
-	//DebagComment(" SelectOrbit : finished ");
 }
 
 //指先移動軌道を計算
@@ -290,19 +258,24 @@ void PositionSpeed(double *currentTime, kine::Kinematics *arm, double *speed) {
 
 	//手先位置
 	arm->GetCoordinate(firstPos);
-
-	for (int i = 0; i < 3; ++i) endPos[i] = tarPos.mid[i];
-
-	//経由点の計算
-	CalcViaPos(tarPos, VIA_LENGTH, viaPos);
+	tarPos.getMidPoint(endPos);
 
 	//直線軌道
-	//CalcVelocityLinear(firstPos, endPos, *currentTime, positionBuf);
-
-	//スプライン
-	CalcVelocitySpline(firstPos, viaPos, endPos, *currentTime, positionBuf);
-
+	if (trajectoryPattern == 1) {
+		//DebagComment("linear pattern");
+		CalcVelocityLinear(firstPos, endPos, *currentTime, positionBuf);
+	}
+	else if(trajectoryPattern == 2){
+		//DebagComment("spline pattern");
+		//経由点の計算
+		CalcViaPos(tarPos, kine::VIA_LENGTH, viaPos);
+		//スプライン
+		CalcVelocitySpline(firstPos, viaPos, endPos, *currentTime, positionBuf);
+		//CalcVelocitySplineWithB(firstPos, viaPos, endPos, *currentTime, positionBuf);
+	}
 	//DebagComment("position buffer");	DisplayVector(3, positionBuf);
+
+	//for (int i = 0; i < 3; ++i) integralValue[i] += positionBuf[i];
 
 	for (int i = 0; i < 3; ++i) speed[i] = positionBuf[i];
 }
@@ -313,9 +286,10 @@ void PostureSpeed(double *currentTime, double *speed) {
 	//speedは　3 -> roll, 4 -> yaw , 5 -> pitch
 	double postureBuf[3] = {};
 
-	CalcVelocityPosture(currentJointRad, &tarPos, *currentTime, postureBuf);
-	//DebagComment("posture buffer");	DisplayVector(3, postureBuf);
-
+	if (trajectoryPattern != 0) {
+		CalcVelocityPosture(currentJointRad, &tarPos, *currentTime, postureBuf);
+		//DebagComment("posture buffer");	DisplayVector(3, postureBuf);
+	}
 	//計算した指先軌道，手先姿勢動作速度の代入
 	for (int i = 0; i < 3; ++i) speed[i + 3] = postureBuf[i];
 	//speed[6] = 0;
@@ -357,14 +331,14 @@ void CalcCore(double *currentTime, kine::Kinematics *arm, bool selfMotion, doubl
 		double positionBuf[3] = {};
 		arm->GetCoordinate(positionBuf);
 
-		positionRec[loopnum * 4 + 0] = *currentTime;
-		for (int i = 1; i < 4; ++i) positionRec[loopnum * 4 + i] = positionBuf[i - 1];
+		//positionRec[loopnum * 4 + 0] = *currentTime;
+		//for (int i = 1; i < 4; ++i) positionRec[loopnum * 4 + i] = positionBuf[i - 1];
 
-		velocityRec[loopnum * 8 + 0] = *currentTime;	//デバッグ用
-		for (int i = 1; i < 8; ++i) velocityRec[8 * loopnum + i] = speed[i - 1];
+		//velocityRec[loopnum * 8 + 0] = *currentTime;	//デバッグ用
+		//for (int i = 1; i < 8; ++i) velocityRec[8 * loopnum + i] = speed[i - 1];
 
 		//アウトプット用の書き出し回数カウンタ
-		++loopnum;
+		//++loopnum;
 
 		//現在時間の更新
 		*currentTime += kine::TIME_SPAN;
@@ -584,41 +558,48 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 		WriteOut();
 	}
 
-	
-
 	if (SO_KEY_PRESS_EVENT(event, NUMBER_0)) {
 		DebagComment("key 0 : caliblation fixture -> IN");
-		SelectOrbit(kine::CALIB_IN);
+		SelectTarget(kine::CALIB_IN, &tarPos);
+		trajectoryPattern = 1;
 		CurrentTime = 0.0;
 	}
 	if (SO_KEY_PRESS_EVENT(event, NUMBER_1)) {
 		DebagComment("key 1 : caliblation fixture -> OUT");
-		SelectOrbit(kine::CALIB_OUT);
+		SelectTarget(kine::CALIB_OUT, &tarPos);
+		trajectoryPattern = 1;
 		CurrentTime = 0.0;
 	}
 	if (SO_KEY_PRESS_EVENT(event, NUMBER_2)) {
-		DebagComment("key 2 : initial position");
-		SelectOrbit(kine::INIT_POS);
+		DebagComment("key 2 : caliblation fixture -> OUT");
+		SelectTarget(kine::CALIB_RIGHT, &tarPos);
+		trajectoryPattern = 1;
 		CurrentTime = 0.0;
 	}
 	if (SO_KEY_PRESS_EVENT(event, NUMBER_3)) {
-		DebagComment("key 3 : pick up position");
-		SelectOrbit(kine::PICK_POS);
+		DebagComment("key 3 : initial position");
+		SelectTarget(kine::INIT_POS, &tarPos);
+		trajectoryPattern = 1;
 		CurrentTime = 0.0;
 	}
 	if (SO_KEY_PRESS_EVENT(event, NUMBER_4)) {
-		DebagComment("key 4 : picking action");
-		SelectOrbit(kine::PICKING);
+		DebagComment("key 4 : pick up position");
+		SelectTarget(kine::PICK_POS, &tarPos);
+		trajectoryPattern = 2;
 		CurrentTime = 0.0;
 	}
 	if (SO_KEY_PRESS_EVENT(event, NUMBER_5)) {
-		DebagComment("key 4 : conveyor position");
-		SelectOrbit(kine::CONVEY);
+		DebagComment("key 5 : picking action");
+		trajectoryPattern = 1;
+		SelectTarget(kine::PICKING, &tarPos);
 		CurrentTime = 0.0;
 	}
-
-
-
+	if (SO_KEY_PRESS_EVENT(event, NUMBER_6)) {
+		DebagComment("key 6 : conveyor position");
+		trajectoryPattern = 2;
+		SelectTarget(kine::CONVEY, &tarPos);
+		CurrentTime = 0.0;
+	}
 
 	//プログラム終了
 	if (SO_KEY_PRESS_EVENT(event, Q)) { 
@@ -651,15 +632,6 @@ void SimulatorKeyPressCB(void *userData, SoEventCallback *eventCB) {
 	return sb;
 }
 */
-
-
-
-
-
-
-
-
-
 
 //各関節の回転コールバック
 static void Arm1RotSensorCallback(void *b_data1, SoSensor *) {
@@ -707,24 +679,33 @@ static void Arm7RotSensorCallback(void *b_data7, SoSensor *) {
 	}
 	*/
 }
+/*
 static void RedPointSensorCallback(void *b_data8, SoSensor *) {
 	SoTranslation *trans8 = (SoTranslation*)b_data8;
 
 	trans8->translation.setValue(handCameraCoordinate[0], handCameraCoordinate[1], handCameraCoordinate[2]);
 }
+*/
 static void GoalPointSensorCallback(void *b_data, SoSensor *) {
 	SoTranslation *trans = (SoTranslation*)b_data;
 
 	trans->translation.setValue(tarPos.mid[0], tarPos.mid[1], tarPos.mid[2]);
 }
+static void ConeSensorCallback(void *b_data, SoSensor *) {
+	SoTransform *trans = (SoTransform*)b_data;
 
-void ArmSimulator(int argc){
+	//trans->rotation.setValue();
+}
+
+
+
+void ArmSimulator(int modelType){
 	//説明文の表示
 	DisplayDescription();
 
 	pointInitialize();
 
-	SelectOrbit(kine::CALIB_IN);
+	SelectTarget(kine::PICK_POS, &tarPos);
 
 	//画面の初期化
 	HWND myWindow = SoWin::init("");
@@ -756,13 +737,13 @@ void ArmSimulator(int argc){
 	//カメラ位置確認用赤玉
 	SoSeparator *redPointSep = new SoSeparator;
 
-	SoTranslation *redPointTrans = new SoTranslation;
-	SoTimerSensor *redPointTransMoveSensor = new SoTimerSensor(RedPointSensorCallback, redPointTrans);
-	redPointTransMoveSensor->setInterval(0.01);
-	redPointTransMoveSensor->schedule();
+	//SoTranslation *redPointTrans = new SoTranslation;
+	//SoTimerSensor *redPointTransMoveSensor = new SoTimerSensor(RedPointSensorCallback, redPointTrans);
+	//redPointTransMoveSensor->setInterval(0.01);
+	//redPointTransMoveSensor->schedule();
 	
-	redPointSep->addChild(redPointTrans);
-	PointObj(redPointSep);
+	//redPointSep->addChild(redPointTrans);
+	//PointObj(redPointSep);
 
 	//////////////////////////////////////////
 	//目標座標三点確認用
@@ -811,7 +792,7 @@ void ArmSimulator(int argc){
 	SoInput baseIpt;	SoInput arm1Ipt;	SoInput arm2Ipt;	SoInput arm3Ipt;
 	SoInput arm4Ipt;	SoInput arm5Ipt;	SoInput arm6Ipt;	SoInput arm7Ipt;
 
-	if (argc == 0) {
+	if (modelType == 0) {
 		//超簡易版アーム/////////////////////////////////////////////////
 		if (!baseIpt.openFile("Arms1.0/base.wrl")) exit(1);
 		if (!arm1Ipt.openFile("Arms1.0/arm1.wrl")) exit(1);
@@ -830,7 +811,7 @@ void ArmSimulator(int argc){
 		arm6Trans->translation.setValue(0.0, 0.0, 0.037);
 		arm7Trans->translation.setValue(0.0, -0.022, 0.0);
 	}
-	else if (argc == 1) {
+	else if (modelType == 1) {
 		//カメラ付きアーム版//////////////////////////////////////////////
 		if (!baseIpt.openFile("Arms4.0/ArmBaseRefine.wrl")) exit(1);
 		if (!arm1Ipt.openFile("Arms4.0/Arm1Refine.wrl")) exit(1);
@@ -917,6 +898,17 @@ void ArmSimulator(int argc){
 	//arm6sep->addChild(coordinateSystem);	
 	arm7sep->addChild(arm7Trans);	arm7sep->addChild(arm7InitialRot);	arm7sep->addChild(arm7Rot);	arm7sep->addChild(arm7Obj);
 	arm7sep->addChild(coordinateSystem);
+
+	//コーンによる姿勢の視覚化////////////////////////////////////
+
+	SoSeparator *cone = new SoSeparator;
+	SoTransform *coneTrans = new SoTransform;
+
+	SoTimerSensor *coneMoveSensor = new SoTimerSensor(Arm1RotSensorCallback, coneTrans);
+
+	arm1MoveSensor->setInterval(0.01);
+
+	ConeObj(cone);
 
 	//セパレータツリーの作成///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

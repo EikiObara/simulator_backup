@@ -20,4 +20,6 @@ void AlmiFlame(std::vector<double> position, SoSeparator *armFlame);
 
 void CoordinateSystem(SoSeparator *coordinateSystem);
 
+void ConeObj(SoSeparator *cone);
+
 #endif //__3D_OBJECTS_H__

@@ -13,16 +13,14 @@
 namespace kine {
 
 	//関節角度から同次変換行列を生成する
-	void InitOM(double *currentRadian, Matrix &OM);
+	void InitOM(double *currentRadian, Matrix *OM);
 
 	//同次変換行列を関節ごとに算出する。
-	void CalcHTM(Matrix OM, Matrix &HTM);
+	void CalcHTM(Matrix *OM, Matrix *HTM);
 
 	//ヤコビ行列を生成する。
-	void CalcJacob(Matrix HTM, int selfmotion, Matrix &Jacob);
+	void CalcJacob(Matrix *HTM, int selfmotion, Matrix *Jacob);
 
-	//疑似逆行列を生成する。
-	int PIM(Matrix mat, Matrix &PIMat);
 
 	//運動学クラス
 	class Kinematics {
@@ -42,16 +40,24 @@ namespace kine {
 		int CalcIK(double *currentRadian, double *handVelocity, double *nextRadVerocity);
 		int CalcPIK(double *currentRadian, double *handVelocity, double *nextRadVerocity);
 
-		void Pick(double *curJointRad, TarPoints tarCoord, double *currentTime, double *nextRadVelocity);
+		//void Pick(double *curJointRad, TarPoints tarCoord, double *currentTime, double *nextRadVelocity);
 
 	private:
 		//肘:elbow:e,手首:wrist:w,手先:finger:f
 
 		//よく呼び出す変数
-		Matrix om;
-		Matrix htm;
-		Matrix jacob;
-		Matrix iJacob;
+		Matrix *om;
+		Matrix *htm;
+		Matrix *jacob;
+		Matrix *iJacob;
+
+		//PIMで使う．
+		Matrix *TMat;
+		Matrix *sqMat;
+		Matrix *detMat;
+		Matrix *IsqMat;
+
+		int PIM(Matrix *Mat, Matrix *PImat);
 
 		//座標値を持っている関数
 		double eX, eY, eZ;

@@ -44,7 +44,7 @@ public:
 	void CreateDiMatrix(const int myRow, const int myColumn);
 	void CreateTriMatrix(const int myRow, const int myColumn, const int myMatSize);
 
-	bool InverseMatrix(Matrix &returnMat);
+	bool InverseMatrix(Matrix *returnMat);
 
 private:
 	enum{twoD = 1, threeD = 2};

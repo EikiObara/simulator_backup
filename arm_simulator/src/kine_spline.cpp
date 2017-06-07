@@ -81,3 +81,48 @@ double Spline::calc(double variable) {
 
 	return buf;
 }
+
+int Combination(unsigned int n, unsigned int r) {
+	//—v‘fn‚ªr‚æ‚è­‚È‚¢‚Æ‚«
+	if (r * 2 > n) r = n - r;
+
+	int dividend = 1;
+	int divisor = 1;
+	for (int i = 1; i <= r; ++i) {
+		dividend *= (n - i + 1);
+		divisor *= i;
+	}
+	return dividend / divisor;
+}
+
+double BSpline(std::vector<double> node, int nodeValue, double t) {
+	double sum = 0;
+	double c1 = 0;
+	double c2 = 0;
+
+	int NumOfTimes = nodeValue - 1;
+
+	for (int r = 0; r <= NumOfTimes; ++r) {
+		c1 = pow(1 - t, NumOfTimes - r);
+		c2 = pow(t, r);
+		sum += Combination(NumOfTimes, r) * c1 * c2 * node[r];
+	}
+
+	return sum;
+}
+
+double BSpline(double *node, int nodeValue, double t) {
+	double sum = 0;
+	double c1 = 0;
+	double c2 = 0;
+
+	int NumOfTimes = nodeValue - 1;
+
+	for (int r = 0; r <= NumOfTimes; ++r) {
+		c1 = pow(1 - t, NumOfTimes - r);
+		c2 = pow(t, r);
+		sum += Combination(NumOfTimes, r) * c1 * c2 * node[r];
+	}
+
+	return sum;
+}

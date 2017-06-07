@@ -2,17 +2,23 @@
 // 2017/04/28
 // created by eiki obara
 
+//もし初期姿勢や搬送ユニットの座標が間違っているならば，
+// src/kine_trajectory.cpp の selectTarget 関数を変更してください．
+
+
 #ifndef __MY_CONFIG_H__
 #define __MY_CONFIG_H__
 
 namespace kine {
-	enum orbitMode {
-		CALIB_IN = 0,	//７．キャリブレーション治具上方10cmへ
-		CALIB_OUT = 1,	//１．キャリブレーション冶具から上方10㎝
-		INIT_POS = 2,	//２．キャリブレーション治具上方10cmから初期姿勢
-		PICK_POS = 3,	//３．初期姿勢から把持姿勢
-		PICKING = 4,	//４．把持姿勢から摘み取り動作を行う
-		CONVEY = 5	//５．摘み取り動作後収穫搬送機構へ
+	enum targetType {
+		CALIB_IN	= 0,	//７．キャリブレーション治具上方10cmへ
+		CALIB_OUT	= 1,	//１．キャリブレーション冶具から上方10㎝
+		CALIB_RIGHT = 2,
+		INIT_POS	= 3,	//２．キャリブレーション治具上方10cmから初期姿勢
+		PICK_POS	= 4,	//３．初期姿勢から把持姿勢
+		PICKING		= 5,	//４．把持姿勢から摘み取り動作を行う
+		CONVEY		= 6,	//５．摘み取り動作後収穫搬送機構へ
+		KEYBOARD	= 7		//６．キーボードから受取
 	};
 
 	//通過点の設定値(初期位置と最終位置を含む点の数)
@@ -25,10 +31,16 @@ namespace kine {
 	const int MAXJOINT = 8; //7 axis and hand tip DoF
 
 	//速度計算1ループごとに進む時間
-	const double TIME_SPAN = 0.01;
+	const double TIME_SPAN = 0.001;
 
-	//台形補間の計算総時間
-	const double TIME_LENGTH = 2.0;
+	//総移動時間
+	const double TIME_LENGTH = 1.0;
+
+	//指先軌道の計算総時間
+	const double POSITION_CHANGE_TIME = TIME_LENGTH;
+
+	//手先姿勢の計算総時間
+	const double POSTURE_CHANGE_TIME = TIME_LENGTH * 1;
 
 	//台形補間の加減速時間
 	const double ACCEL_TIME = TIME_LENGTH / 4;
@@ -45,16 +57,10 @@ namespace kine {
 	const double F_ARM_LENGTH = 0.257;
 	//手先(hand)
 	//const double H_ARM_LENGTH = 0.157;	//light simulator
-	const double H_ARM_LENGTH = 0.135;	//real simulator
+	const double H_ARM_LENGTH = 0.1407;	//real simulator
 
-	//手首からカメラ設置位置の距離
-	const double WRIST2CAMERA_LENGTH = 0.0405;	
-
-	const double CAMERA_POSITION = 0.10;	//カメラ設置位置からカメラまでの距離
-
-	const double CAMERA_OFFSET = -0.006;	//手先とカメラの中心までのズレ
-
-
+	//経由点を目標点の半径いくらに設定するか．単位はメートル
+	const double VIA_LENGTH = 0.08;
 
 	//スペースマウスの値強度
 	//const double SPACEMOUSE_TRANSLATION_GAIN = 0.0f;

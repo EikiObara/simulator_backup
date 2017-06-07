@@ -15,9 +15,6 @@
     <ClInclude Include="src\include\arm_simulator.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\camera_position.h">
-      <Filter>header</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\cone_simulator.h">
       <Filter>header</Filter>
     </ClInclude>
@@ -71,13 +68,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\3Dobjects.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="src\arm_simulator.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\camera_position.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="src\cone_simulator.cpp">
@@ -123,6 +114,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="src\kine_trajectory.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\3Dobjects.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

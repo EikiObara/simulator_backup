@@ -144,3 +144,12 @@ void CoordinateSystem(SoSeparator *coordinateSystem) {
 	coordinateSystem->addChild(Y_text);
 	coordinateSystem->addChild(Z_text);
 }
+
+void ConeObj(SoSeparator *cone) {
+	SoCone *c = new SoCone;
+
+	c->bottomRadius = 0.01;
+	c->height = 0.1;
+
+	cone->addChild(c);
+}
